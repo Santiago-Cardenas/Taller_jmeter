@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="P09 · Concurrencia: total cobrado = precio × cantidad">
+      <stringProp name="TestPlan.comments">El CSV trae el total esperado de cada fila (precio × cantidad). Una JSON Assertion compara $.total de la selección y del pago contra ${total_esperado}. Grupo 1: control con un CSV que trae un total alterado a propósito, para comprobar que la aserción sí detecta la diferencia. Grupo 2: carga de 300 usuarios sin pausas.</stringProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="Variables definidas por el usuario">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">true</boolProp>
+    </TestPlan>
+    <hashTree>
+<ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="Valores por Defecto para Petición HTTP">
+  <stringProp name="HTTPSampler.protocol">http</stringProp>
+  <stringProp name="HTTPSampler.domain">127.0.0.1</stringProp>
+  <stringProp name="HTTPSampler.port">8080</stringProp>
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="Variables definidas por el usuario">
+    <collectionProp name="Arguments.arguments"/>
+  </elementProp>
+</ConfigTestElement>
+<hashTree/>
+<CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="Gestor de Cookies HTTP">
+  <collectionProp name="CookieManager.cookies"/>
+  <boolProp name="CookieManager.clearEachIteration">false</boolProp>
+  <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
+</CookieManager>
+<hashTree/>
+<ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Control con total alterado">
+  <stringProp name="TestPlan.comments"></stringProp>
+  <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+  <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Controlador Bucle">
+    <stringProp name="LoopController.loops">1</stringProp>
+    <boolProp name="LoopController.continue_forever">false</boolProp>
+  </elementProp>
+  <stringProp name="ThreadGroup.num_threads">4</stringProp>
+  <stringProp name="ThreadGroup.ramp_time">0</stringProp>
+  <boolProp name="ThreadGroup.delayedStart">false</boolProp>
+  <boolProp name="ThreadGroup.scheduler">false</boolProp>
+  <stringProp name="ThreadGroup.duration"></stringProp>
+  <stringProp name="ThreadGroup.delay"></stringProp>
+  <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+</ThreadGroup>
+<hashTree>
+<CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV con un total alterado">
+  <stringProp name="filename">datos-total-alterado.csv</stringProp>
+  <stringProp name="fileEncoding">UTF-8</stringProp>
+  <stringProp name="variableNames">tarifa,cantidad,total_esperado</stringProp>
+  <boolProp name="ignoreFirstLine">true</boolProp>
+  <stringProp name="delimiter">,</stringProp>
+  <boolProp name="quotedData">false</boolProp>
+  <boolProp name="recycle">true</boolProp>
+  <boolProp name="stopThread">false</boolProp>
+  <stringProp name="shareMode">shareMode.all</stringProp>
+</CSVDataSet>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="SeleccionTarifaYCantidad [control]">
+  <stringProp name="HTTPSampler.path">/api/seleccion</stringProp>
+  <stringProp name="HTTPSampler.method">POST</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+  <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+    <collectionProp name="Arguments.arguments">
+      <elementProp name="" elementType="HTTPArgument">
+        <boolProp name="HTTPArgument.always_encode">false</boolProp>
+        <stringProp name="Argument.value">{&quot;tarifa&quot;:&quot;${tarifa}&quot;,&quot;cantidad&quot;:${cantidad}}</stringProp>
+        <stringProp name="Argument.metadata">=</stringProp>
+      </elementProp>
+    </collectionProp>
+  </elementProp>
+</HTTPSamplerProxy>
+<hashTree>
+<HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Gestor de Cabecera HTTP">
+  <collectionProp name="HeaderManager.headers">
+    <elementProp name="" elementType="Header">
+      <stringProp name="Header.name">Accept</stringProp>
+      <stringProp name="Header.value">application/json</stringProp>
+    </elementProp>
+    <elementProp name="" elementType="Header">
+      <stringProp name="Header.name">Content-Type</stringProp>
+      <stringProp name="Header.value">application/json</stringProp>
+    </elementProp>
+  </collectionProp>
+</HeaderManager>
+<hashTree/>
+<JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="JSON Extractor">
+  <stringProp name="JSONPostProcessor.referenceNames">num_reserva</stringProp>
+  <stringProp name="JSONPostProcessor.jsonPathExprs">$.reserva</stringProp>
+  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+  <stringProp name="JSONPostProcessor.defaultValues">num_reserva_not_found</stringProp>
+</JSONPostProcessor>
+<hashTree/>
+<JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="JSON Assertion: total = precio × cantidad">
+  <stringProp name="JSON_PATH">$.total</stringProp>
+  <stringProp name="EXPECTED_VALUE">${total_esperado}</stringProp>
+  <boolProp name="JSONVALIDATION">true</boolProp>
+  <boolProp name="EXPECT_NULL">false</boolProp>
+  <boolProp name="INVERT">false</boolProp>
+  <boolProp name="ISREGEX">false</boolProp>
+</JSONPathAssertion>
+<hashTree/>
+</hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Pago [control]">
+  <stringProp name="HTTPSampler.path">/api/pago</stringProp>
+  <stringProp name="HTTPSampler.method">POST</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+  <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+    <collectionProp name="Arguments.arguments">
+      <elementProp name="" elementType="HTTPArgument">
+        <boolProp name="HTTPArgument.always_encode">false</boolProp>
+        <stringProp name="Argument.value">{&quot;reserva&quot;:&quot;${num_reserva}&quot;}</stringProp>
+        <stringProp name="Argument.metadata">=</stringProp>
+      </elementProp>
+    </collectionProp>
+  </elementProp>
+</HTTPSamplerProxy>
+<hashTree>
+<HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Gestor de Cabecera HTTP">
+  <collectionProp name="HeaderManager.headers">
+    <elementProp name="" elementType="Header">
+      <stringProp name="Header.name">Accept</stringProp>
+      <stringProp name="Header.value">application/json</stringProp>
+    </elementProp>
+    <elementProp name="" elementType="Header">
+      <stringProp name="Header.name">Content-Type</stringProp>
+      <stringProp name="Header.value">application/json</stringProp>
+    </elementProp>
+  </collectionProp>
+</HeaderManager>
+<hashTree/>
+<JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="JSON Assertion: estado = APROBADO">
+  <stringProp name="JSON_PATH">$.estado</stringProp>
+  <stringProp name="EXPECTED_VALUE">APROBADO</stringProp>
+  <boolProp name="JSONVALIDATION">true</boolProp>
+  <boolProp name="EXPECT_NULL">false</boolProp>
+  <boolProp name="INVERT">false</boolProp>
+  <boolProp name="ISREGEX">false</boolProp>
+</JSONPathAssertion>
+<hashTree/>
+<JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="JSON Assertion: total cobrado = precio × cantidad">
+  <stringProp name="JSON_PATH">$.total</stringProp>
+  <stringProp name="EXPECTED_VALUE">${total_esperado}</stringProp>
+  <boolProp name="JSONVALIDATION">true</boolProp>
+  <boolProp name="EXPECT_NULL">false</boolProp>
+  <boolProp name="INVERT">false</boolProp>
+  <boolProp name="ISREGEX">false</boolProp>
+</JSONPathAssertion>
+<hashTree/>
+</hashTree>
+</hashTree>
+<ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Bajo carga">
+  <stringProp name="TestPlan.comments">Retardo de arranque de 150 s: deja que Windows libere los puertos (TIME_WAIT) que usó la variante anterior, para que no contamine esta.</stringProp>
+  <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+  <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Controlador Bucle">
+    <stringProp name="LoopController.loops">-1</stringProp>
+    <boolProp name="LoopController.continue_forever">false</boolProp>
+  </elementProp>
+  <stringProp name="ThreadGroup.num_threads">300</stringProp>
+  <stringProp name="ThreadGroup.ramp_time">10</stringProp>
+  <boolProp name="ThreadGroup.delayedStart">false</boolProp>
+  <boolProp name="ThreadGroup.scheduler">true</boolProp>
+  <stringProp name="ThreadGroup.duration">60</stringProp>
+  <stringProp name="ThreadGroup.delay">150</stringProp>
+  <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+</ThreadGroup>
+<hashTree>
+<CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="Configuración del CSV Data Set">
+  <stringProp name="filename">datos-con-total.csv</stringProp>
+  <stringProp name="fileEncoding">UTF-8</stringProp>
+  <stringProp name="variableNames">tarifa,cantidad,total_esperado</stringProp>
+  <boolProp name="ignoreFirstLine">true</boolProp>
+  <stringProp name="delimiter">,</stringProp>
+  <boolProp name="quotedData">false</boolProp>
+  <boolProp name="recycle">true</boolProp>
+  <boolProp name="stopThread">false</boolProp>
+  <stringProp name="shareMode">shareMode.all</stringProp>
+</CSVDataSet>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Tarifas [bajo carga]">
+  <stringProp name="HTTPSampler.path">/api/tarifas</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+  <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="Variables definidas por el usuario">
+    <collectionProp name="Arguments.arguments"/>
+  </elementProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="SeleccionTarifaYCantidad [bajo carga]">
+  <stringProp name="HTTPSampler.path">/api/seleccion</stringProp>
+  <stringProp name="HTTPSampler.method">POST</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+  <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+    <collectionProp name="Arguments.arguments">
+      <elementProp name="" elementType="HTTPArgument">
+        <boolProp name="HTTPArgument.always_encode">false</boolProp>
+        <stringProp name="Argument.value">{&quot;tarifa&quot;:&quot;${tarifa}&quot;,&quot;cantidad&quot;:${cantidad}}</stringProp>
+        <stringProp name="Argument.metadata">=</stringProp>
+      </elementProp>
+    </collectionProp>
+  </elementProp>
+</HTTPSamplerProxy>
+<hashTree>
+<HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Gestor de Cabecera HTTP">
+  <collectionProp name="HeaderManager.headers">
+    <elementProp name="" elementType="Header">
+      <stringProp name="Header.name">Accept</stringProp>
+      <stringProp name="Header.value">application/json</stringProp>
+    </elementProp>
+    <elementProp name="" elementType="Header">
+      <stringProp name="Header.name">Content-Type</stringProp>
+      <stringProp name="Header.value">application/json</stringProp>
+    </elementProp>
+  </collectionProp>
+</HeaderManager>
+<hashTree/>
+<JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="JSON Extractor">
+  <stringProp name="JSONPostProcessor.referenceNames">num_reserva</stringProp>
+  <stringProp name="JSONPostProcessor.jsonPathExprs">$.reserva</stringProp>
+  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+  <stringProp name="JSONPostProcessor.defaultValues">num_reserva_not_found</stringProp>
+</JSONPostProcessor>
+<hashTree/>
+<JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="JSON Assertion: total = precio × cantidad">
+  <stringProp name="JSON_PATH">$.total</stringProp>
+  <stringProp name="EXPECTED_VALUE">${total_esperado}</stringProp>
+  <boolProp name="JSONVALIDATION">true</boolProp>
+  <boolProp name="EXPECT_NULL">false</boolProp>
+  <boolProp name="INVERT">false</boolProp>
+  <boolProp name="ISREGEX">false</boolProp>
+</JSONPathAssertion>
+<hashTree/>
+</hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Pago [bajo carga]">
+  <stringProp name="HTTPSampler.path">/api/pago</stringProp>
+  <stringProp name="HTTPSampler.method">POST</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+  <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+    <collectionProp name="Arguments.arguments">
+      <elementProp name="" elementType="HTTPArgument">
+        <boolProp name="HTTPArgument.always_encode">false</boolProp>
+        <stringProp name="Argument.value">{&quot;reserva&quot;:&quot;${num_reserva}&quot;}</stringProp>
+        <stringProp name="Argument.metadata">=</stringProp>
+      </elementProp>
+    </collectionProp>
+  </elementProp>
+</HTTPSamplerProxy>
+<hashTree>
+<HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Gestor de Cabecera HTTP">
+  <collectionProp name="HeaderManager.headers">
+    <elementProp name="" elementType="Header">
+      <stringProp name="Header.name">Accept</stringProp>
+      <stringProp name="Header.value">application/json</stringProp>
+    </elementProp>
+    <elementProp name="" elementType="Header">
+      <stringProp name="Header.name">Content-Type</stringProp>
+      <stringProp name="Header.value">application/json</stringProp>
+    </elementProp>
+  </collectionProp>
+</HeaderManager>
+<hashTree/>
+<JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="JSON Assertion: estado = APROBADO">
+  <stringProp name="JSON_PATH">$.estado</stringProp>
+  <stringProp name="EXPECTED_VALUE">APROBADO</stringProp>
+  <boolProp name="JSONVALIDATION">true</boolProp>
+  <boolProp name="EXPECT_NULL">false</boolProp>
+  <boolProp name="INVERT">false</boolProp>
+  <boolProp name="ISREGEX">false</boolProp>
+</JSONPathAssertion>
+<hashTree/>
+<JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="JSON Assertion: total cobrado = precio × cantidad">
+  <stringProp name="JSON_PATH">$.total</stringProp>
+  <stringProp name="EXPECTED_VALUE">${total_esperado}</stringProp>
+  <boolProp name="JSONVALIDATION">true</boolProp>
+  <boolProp name="EXPECT_NULL">false</boolProp>
+  <boolProp name="INVERT">false</boolProp>
+  <boolProp name="ISREGEX">false</boolProp>
+</JSONPathAssertion>
+<hashTree/>
+</hashTree>
+</hashTree>
+<ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Reporte resumen">
+  <boolProp name="ResultCollector.error_logging">false</boolProp>
+  <stringProp name="filename"></stringProp>
+</ResultCollector>
+<hashTree/>
+<ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="Ver Árbol de Resultados" enabled="false">
+  <boolProp name="ResultCollector.error_logging">false</boolProp>
+  <stringProp name="filename"></stringProp>
+</ResultCollector>
+<hashTree/>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

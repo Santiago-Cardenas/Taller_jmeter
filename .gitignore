@@ -1,0 +1,20 @@
+# Material de la clase (no es parte de la entrega)
+docs/
+
+# Resultados de JMeter (se generan en cada ejecución)
+*.jtl
+reporte/
+reportes/
+resultados/
+jmeter.log
+*.log
+
+# Python
+__pycache__/
+
+# Sistema y editor
+.vscode/
+.claude/
+Thumbs.db
+desktop.ini
+.DS_Store
