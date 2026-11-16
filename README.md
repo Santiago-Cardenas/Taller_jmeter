@@ -70,7 +70,7 @@ Un solo job, `prueba-rendimiento`, que se dispara con un push a `main` o a mano 
 
 1. Descarga el repositorio.
 2. Instala Java 17.
-3. Instala JMeter 5.6.3 (verifica su SHA-512) y agrega `bin/` al PATH con `$GITHUB_PATH`.
+3. Instala JMeter 5.6.3 y agrega `bin/` al PATH con `$GITHUB_PATH`. Lo descarga del CDN de Apache (`dlcdn.apache.org`), verifica su SHA-512 y lo guarda en caché, así las ejecuciones siguientes no lo vuelven a descargar. La primera versión lo bajaba de `archive.apache.org`, que limita la velocidad: ese paso tardó unos 20 minutos.
 4. Levanta la API en el puerto 8080 en segundo plano.
 5. Espera a que `/api/salud` responda.
 6. Ejecuta el plan en modo no-GUI desde `pruebas/jmeter/`, con `.jtl` y reporte HTML.
